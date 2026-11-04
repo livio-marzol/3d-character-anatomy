@@ -1,0 +1,35 @@
+# Dependencies & Build Output
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor & OS directories
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Local reference images & unrelated folders
+cha1.jpg
+cha02.png
+cha03.jpg
+cha04.jpg
+cha05.jpg
+cha06.jpg
+edicula-3d/

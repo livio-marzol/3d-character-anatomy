@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AETHER // 3D Character Studio (Three.js + WGSL)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- 3D Viewport Canvas Container -->
+    <div id="viewport-container">
+      <canvas id="three-canvas"></canvas>
+
+      <!-- Top Studio Header Bar -->
+      <header class="studio-header">
+        <div class="brand-block">
+          <div class="brand-badge">WGSL // TSL</div>
+          <div class="brand-titles">
+            <h1>AETHER CHARACTER STUDIO</h1>
+            <span id="renderer-status" class="status-pill">Inicializando WebGPU / WGSL...</span>
+          </div>
+        </div>
+
+        <!-- Viewport Inspection Modes (Inspired by cha03, cha04, cha05) -->
+        <div class="view-modes-bar" role="group" aria-label="Modos de Visualização">
+          <button class="mode-btn active" data-mode="pbr" title="Renderização PBR + Shaders WGSL">
+            <span class="dot pbr-dot"></span> PBR + WGSL
+          </button>
+          <button class="mode-btn" data-mode="wireframe" title="Sobreposição de Topologia Quad-Flow">
+            <span class="dot wire-dot"></span> Quad Wire
+          </button>
+          <button class="mode-btn" data-mode="clay" title="Modo Escultura ZBrush / Clay MatCap">
+            <span class="dot clay-dot"></span> Clay Sculpt
+          </button>
+          <button class="mode-btn" data-mode="normals" title="Inspeção de Mapa de Normais">
+            <span class="dot norm-dot"></span> Normal View
+          </button>
+        </div>
+
+        <!-- Quick Character Presets -->
+        <div class="header-actions">
+          <button id="btn-randomize" class="action-btn secondary" title="Gerar variações originais aleatórias">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+            Randomizar
+          </button>
+          <button id="btn-reset" class="action-btn ghost" title="Restaurar padrão">
+            Resetar
+          </button>
+          <button id="btn-export" class="action-btn primary" title="Exportar DNA JSON do Personagem">
+            Exportar DNA
+          </button>
+        </div>
+      </header>
+
+      <!-- Camera Focus Floating Controls (Bottom Left) -->
+      <div class="camera-hud">
+        <div class="hud-label">CÂMERA DE ESTÚDIO</div>
+        <div class="camera-buttons">
+          <button class="cam-btn" data-cam="head">Rosto</button>
+          <button class="cam-btn" data-cam="upper">Busto</button>
+          <button class="cam-btn active" data-cam="full">Corpo Inteiro</button>
+          <button class="cam-btn" data-cam="profile">Perfil</button>
+        </div>
+        <div class="lighting-Quick">
+          <label class="toggle-chip">
+            <input type="checkbox" id="toggle-turntable" />
+            <span>Rotação Contínua</span>
+          </label>
+          <label class="toggle-chip">
+            <input type="checkbox" id="toggle-breathing" checked />
+            <span>Animação Viva</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Topology & Shader Telemetry Badge (Bottom Center-Left) -->
+      <div class="telemetry-hud">
+        <div class="telemetry-item">
+          <span class="tel-label">MALHA PROCEDURAL</span>
+          <span class="tel-value" id="poly-counter">-- Quads / -- Tris</span>
+        </div>
+        <div class="telemetry-divider"></div>
+        <div class="telemetry-item">
+          <span class="tel-label">PIPELINE DE SHADER</span>
+          <span class="tel-value" id="shader-pipeline-name">WGSL Subsurface + Anisotropic</span>
+        </div>
+        <div class="telemetry-divider"></div>
+        <div class="telemetry-item">
+          <span class="tel-label">MODELO BASE</span>
+          <div class="preset-pills">
+            <button class="preset-pill active" data-preset="female">♀ Feminino</button>
+            <button class="preset-pill" data-preset="male">♂ Masculino</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right / Lateral Customization Menu -->
+    <aside class="customizer-sidebar" aria-label="Menu de Customização do Personagem">
+      <!-- Category Navigation Rail -->
+      <nav class="category-rail" id="category-tabs">
+        <button class="cat-tab active" data-category="body" title="Corpo e Proporções">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="5" r="3"/><path d="M6 9h12l-2 6v6h-3v-5h-2v5H8v-6L6 9z"/></svg>
+          <span>Corpo</span>
+        </button>
+        <button class="cat-tab" data-category="face" title="Rosto e Estrutura Craniana">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2C7.5 2 4 6 4 11c0 4.5 3 9 8 11 5-2 8-6.5 8-11 0-5-3.5-9-8-9z"/><path d="M9 15c1.5 1 4.5 1 6 0"/></svg>
+          <span>Rosto</span>
+        </button>
+        <button class="cat-tab" data-category="eyes" title="Olhos, Íris e Sobrancelhas">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>Olhos</span>
+        </button>
+        <button class="cat-tab" data-category="nose" title="Nariz e Perfil Nasal">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v11c0 2-3 3-3 5s2 2 3 2 3 0 3-2-3-3-3-5"/></svg>
+          <span>Nariz</span>
+        </button>
+        <button class="cat-tab" data-category="mouth" title="Boca e Lábios">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12c3-2 6 0 9 0s6-2 9 0c-2 4-5 6-9 6s-7-2-9-6z"/><path d="M3 12c3 1 6 1 9 1s6 0 9-1"/></svg>
+          <span>Boca</span>
+        </button>
+      </nav>
+
+      <!-- Dynamic Controls Panel -->
+      <div class="controls-drawer">
+        <div class="drawer-header">
+          <div>
+            <span class="drawer-subtitle" id="active-cat-tag">MORFOLOGIA & PELE</span>
+            <h2 id="active-cat-title">Corpo & Proporções</h2>
+          </div>
+          <button id="btn-reset-category" class="mini-reset-btn" title="Resetar apenas esta aba">Resetar Aba</button>
+        </div>
+
+        <div class="drawer-content" id="controls-container">
+          <!-- Populated dynamically by UI controller -->
+        </div>
+
+        <!-- WGSL Shader Live Code Inspector Accordion -->
+        <div class="wgsl-inspector">
+          <button id="toggle-wgsl-code" class="wgsl-toggle-btn">
+            <span>Ver Código WGSL Ativo</span>
+            <span class="code-badge">WGSL</span>
+          </button>
+          <pre id="wgsl-code-preview" class="wgsl-code-box hidden"></pre>
+        </div>
+      </div>
+    </aside>
+
+    <!-- DNA Export Modal -->
+    <div id="dna-modal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>DNA do Personagem (JSON)</h3>
+          <button id="close-modal" class="close-btn">&times;</button>
+        </div>
+        <p class="modal-desc">Estes parâmetros controlam os uniforms WGSL, morph targets procedurais e shaders em tempo real.</p>
+        <textarea id="dna-textarea" readonly></textarea>
+        <div class="modal-footer">
+          <button id="copy-dna-btn" class="action-btn primary">Copiar JSON</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
