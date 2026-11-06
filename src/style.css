@@ -1,6 +1,6 @@
 :root {
   --bg-dark: #090b10;
-  --bg-panel: rgba(16, 19, 27, 0.84);
+  --bg-panel: rgba(16, 19, 27, 0.88);
   --bg-card: rgba(25, 30, 42, 0.72);
   --bg-card-hover: rgba(34, 41, 58, 0.85);
   --border-subtle: rgba(255, 255, 255, 0.08);
@@ -20,6 +20,7 @@
   margin: 0;
   padding: 0;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html, body {
@@ -37,6 +38,7 @@ html, body {
   width: 100vw;
   height: 100vh;
   position: relative;
+  overflow: hidden;
 }
 
 /* 3D Viewport Area */
@@ -53,6 +55,7 @@ html, body {
   height: 100%;
   display: block;
   cursor: grab;
+  touch-action: none; /* Crucial para mobile: permite rotacionar/dar zoom sem travar com scroll do browser */
 }
 
 #three-canvas:active {
@@ -140,6 +143,14 @@ html, body {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.mode-text-short {
+  display: none;
+}
+.mode-text-full {
+  display: inline;
 }
 
 .mode-btn:hover {
@@ -157,6 +168,7 @@ html, body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
+  flex-shrink: 0;
 }
 .pbr-dot { background: linear-gradient(135deg, #f43f5e, #6366f1); }
 .wire-dot { background: #38bdf8; box-shadow: 0 0 6px #38bdf8; }
@@ -167,6 +179,13 @@ html, body {
 .header-actions {
   display: flex;
   gap: 8px;
+}
+
+.btn-text-short {
+  display: none;
+}
+.btn-text-full {
+  display: inline;
 }
 
 .action-btn {
@@ -180,6 +199,7 @@ html, body {
   cursor: pointer;
   transition: all 0.2s ease;
   border: 1px solid var(--border-subtle);
+  white-space: nowrap;
 }
 
 .action-btn.primary {
@@ -217,7 +237,7 @@ html, body {
   border-color: rgba(239, 68, 68, 0.4);
 }
 
-/* Camera & Animation HUD (Bottom Left) */
+/* Camera & Animation HUD (Bottom Left no Desktop) */
 .camera-hud {
   position: absolute;
   bottom: 22px;
@@ -257,6 +277,7 @@ html, body {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.18s;
+  white-space: nowrap;
 }
 
 .cam-btn:hover {
@@ -284,6 +305,7 @@ html, body {
   font-size: 11px;
   color: var(--text-muted);
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .toggle-chip input {
@@ -349,6 +371,7 @@ html, body {
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.15s;
+  white-space: nowrap;
 }
 
 .preset-pill:hover {
@@ -362,9 +385,18 @@ html, body {
   border-color: rgba(236, 72, 153, 0.5);
 }
 
-/* Right Sidebar Customizer */
+/* Mobile Handle (Hidden on Desktop) */
+.mobile-drawer-handle {
+  display: none;
+}
+
+.mobile-open-drawer-btn {
+  display: none;
+}
+
+/* Right Sidebar Customizer (Desktop default) */
 .customizer-sidebar {
-  width: 430px;
+  width: 420px;
   height: 100vh;
   background: rgba(13, 16, 23, 0.96);
   border-left: 1px solid var(--border-subtle);
@@ -373,9 +405,9 @@ html, body {
   box-shadow: -12px 0 40px rgba(0, 0, 0, 0.5);
 }
 
-/* Vertical Category Rail */
+/* Vertical Category Rail (Desktop) */
 .category-rail {
-  width: 78px;
+  width: 76px;
   background: rgba(9, 11, 16, 0.9);
   border-right: 1px solid var(--border-subtle);
   display: flex;
@@ -383,11 +415,12 @@ html, body {
   align-items: center;
   padding: 18px 8px;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .cat-tab {
-  width: 62px;
-  height: 62px;
+  width: 60px;
+  height: 60px;
   border-radius: 12px;
   background: transparent;
   border: 1px solid transparent;
@@ -425,7 +458,7 @@ html, body {
 }
 
 .drawer-header {
-  padding: 20px 20px 14px;
+  padding: 18px 20px 14px;
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: flex-start;
@@ -441,7 +474,7 @@ html, body {
 }
 
 .drawer-header h2 {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   margin-top: 3px;
 }
@@ -468,7 +501,8 @@ html, body {
   padding: 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .drawer-content::-webkit-scrollbar {
@@ -533,7 +567,7 @@ input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 5px;
+  height: 6px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
   outline: none;
@@ -542,8 +576,8 @@ input[type="range"] {
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: #818cf8;
   border: 2px solid #fff;
@@ -557,7 +591,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
   background: #6366f1;
 }
 
-/* Option Grid (Hair Styles, Outfits, Eyebrows) */
+/* Option Grid */
 .option-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -679,7 +713,7 @@ input[type="color"]::-webkit-color-swatch {
 
 .wgsl-code-box {
   margin-top: 8px;
-  max-height: 150px;
+  max-height: 140px;
   overflow-y: auto;
   background: #06080c;
   border: 1px solid var(--border-subtle);
@@ -706,10 +740,12 @@ input[type="color"]::-webkit-color-swatch {
   align-items: center;
   justify-content: center;
   z-index: 100;
+  padding: 16px;
 }
 
 .modal-card {
   width: 480px;
+  max-width: 100%;
   background: #121621;
   border: 1px solid var(--border-subtle);
   border-radius: 16px;
@@ -741,7 +777,7 @@ input[type="color"]::-webkit-color-swatch {
 
 #dna-textarea {
   width: 100%;
-  height: 220px;
+  height: 200px;
   background: #090b10;
   border: 1px solid var(--border-subtle);
   border-radius: 8px;
@@ -755,4 +791,373 @@ input[type="color"]::-webkit-color-swatch {
 .modal-footer {
   display: flex;
   justify-content: flex-end;
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE TOTAL: TABLET & SMARTPHONE (Moto G9 Power, Galaxy A55, etc)
+   ========================================================================== */
+
+@media (max-width: 991px) {
+  #app {
+    flex-direction: column;
+  }
+
+  /* O canvas 3D ocupa a tela inteira atrás da interface */
+  #viewport-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+  }
+
+  /* Header Superior no Mobile */
+  .studio-header {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    gap: 8px;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  .brand-block {
+    padding: 6px 10px;
+    gap: 8px;
+    border-radius: 10px;
+  }
+
+  .brand-badge {
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+
+  .brand-titles h1 {
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .status-pill {
+    display: none; /* Oculta texto secundário para economizar espaço */
+  }
+
+  .view-modes-bar {
+    padding: 3px;
+    gap: 2px;
+    border-radius: 8px;
+  }
+
+  .mode-btn {
+    padding: 5px 8px;
+    font-size: 11px;
+    gap: 5px;
+  }
+
+  .action-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+    gap: 5px;
+    border-radius: 8px;
+  }
+
+  /* Camera HUD flutuante no topo esquerdo (abaixo do header) */
+  .camera-hud {
+    top: 66px;
+    bottom: auto;
+    left: 10px;
+    padding: 8px 10px;
+    gap: 6px;
+    border-radius: 10px;
+    backdrop-filter: blur(18px);
+    background: rgba(14, 18, 26, 0.88);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+
+  .camera-hud .hud-label {
+    font-size: 9px;
+  }
+
+  .cam-btn {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .lighting-Quick {
+    gap: 8px;
+    font-size: 10px;
+  }
+
+  .toggle-chip {
+    font-size: 10px;
+    gap: 4px;
+  }
+
+  /* Telemetria oculta no mobile para visão ampla do boneco */
+  .telemetry-hud {
+    display: none;
+  }
+
+  /* Gaveta Inferior (Bottom Sheet) no Mobile */
+  .customizer-sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100vw;
+    height: 50vh;
+    max-height: 52vh;
+    border-radius: 20px 20px 0 0;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.75);
+    background: rgba(13, 16, 23, 0.95);
+    backdrop-filter: blur(20px);
+    flex-direction: column;
+    z-index: 50;
+    transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), max-height 0.32s ease;
+  }
+
+  /* Estado Recolhido: a gaveta recolhe para a base */
+  .customizer-sidebar.collapsed {
+    transform: translateY(calc(100% - 44px));
+  }
+
+  /* Alça superior da Gaveta Mobile */
+  .mobile-drawer-handle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 16px 6px;
+    cursor: pointer;
+    background: rgba(18, 22, 32, 0.98);
+    border-radius: 20px 20px 0 0;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+  }
+
+  .drawer-drag-pill {
+    width: 38px;
+    height: 4px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.28);
+    margin-bottom: 6px;
+  }
+
+  .drawer-mobile-header-content {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .drawer-mobile-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #cbd5e1;
+    font-family: var(--font-mono);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .drawer-mobile-title .drawer-icon {
+    color: #818cf8;
+  }
+
+  .drawer-mobile-toggle-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-main);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* Abas de Categoria no Mobile (Horizontal) */
+  .category-rail {
+    width: 100%;
+    height: auto;
+    min-height: 48px;
+    border-right: none;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-direction: row;
+    padding: 6px 10px;
+    justify-content: space-between;
+    overflow-x: auto;
+    gap: 5px;
+    background: rgba(9, 11, 16, 0.92);
+  }
+
+  .category-rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .cat-tab {
+    width: auto;
+    flex: 1;
+    min-width: 54px;
+    height: 36px;
+    flex-direction: row;
+    gap: 5px;
+    padding: 4px 6px;
+    border-radius: 8px;
+    font-size: 11px;
+  }
+
+  .cat-tab svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .controls-drawer {
+    flex: 1;
+    height: calc(100% - 94px);
+    overflow: hidden;
+  }
+
+  .drawer-header {
+    padding: 12px 16px 10px;
+  }
+
+  .drawer-header h2 {
+    font-size: 15px;
+  }
+
+  .drawer-content {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+
+  .control-section {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  /* Botão Flutuante Mobile para Reabrir Gaveta */
+  .mobile-open-drawer-btn {
+    position: absolute;
+    bottom: 56px;
+    right: 14px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.45);
+    padding: 9px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    z-index: 40;
+    transition: transform 0.2s ease;
+  }
+
+  .mobile-open-drawer-btn:active {
+    transform: scale(0.95);
+  }
+}
+
+/* ==========================================================================
+   SMARTPHONES ESTREITOS (Moto G9 Power ~360px a 412px de largura)
+   ========================================================================== */
+
+@media (max-width: 600px) {
+  .mode-text-full {
+    display: none;
+  }
+  .mode-text-short {
+    display: inline;
+  }
+
+  .btn-text-full {
+    display: none;
+  }
+  .btn-text-short {
+    display: inline;
+  }
+
+  .brand-block {
+    padding: 5px 8px;
+    gap: 6px;
+  }
+
+  .brand-titles h1 {
+    font-size: 10px;
+    letter-spacing: 0.04em;
+  }
+
+  .view-modes-bar {
+    padding: 2px;
+    gap: 1px;
+  }
+
+  .mode-btn {
+    padding: 5px 6px;
+    font-size: 10px;
+    gap: 4px;
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .header-actions {
+    gap: 4px;
+  }
+
+  .action-btn {
+    padding: 5px 7px;
+    font-size: 10px;
+    gap: 3px;
+  }
+
+  .action-btn svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .camera-hud {
+    top: 58px;
+    left: 8px;
+    padding: 6px 8px;
+    gap: 5px;
+  }
+
+  .camera-buttons {
+    gap: 3px;
+  }
+
+  .cam-btn {
+    padding: 4px 6px;
+    font-size: 9px;
+  }
+
+  .cat-tab {
+    min-width: 48px;
+    font-size: 10px;
+    padding: 3px 4px;
+  }
+
+  .cat-tab span {
+    font-size: 10px;
+  }
+
+  .option-card {
+    padding: 7px 8px;
+    font-size: 11px;
+  }
+
+  .customizer-sidebar {
+    height: 48vh;
+    max-height: 50vh;
+  }
 }

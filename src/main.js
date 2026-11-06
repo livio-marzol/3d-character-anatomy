@@ -16,8 +16,9 @@ class CharacterStudioApp {
     this.clock = new THREE.Clock();
 
     // Camera smooth transition target state
-    this.cameraTargetPos = new THREE.Vector3(0, 1.02, 2.38);
-    this.controlsTarget = new THREE.Vector3(0, 0.92, 0);
+    this.currentCameraPreset = 'full';
+    this.cameraTargetPos = new THREE.Vector3(0, 0.86, 3.25);
+    this.controlsTarget = new THREE.Vector3(0, 0.82, 0);
     this.isTransitioningCamera = false;
 
     this.init();
@@ -26,9 +27,14 @@ class CharacterStudioApp {
   async init() {
     // 1. Scene & Camera Setup
     this.scene = new THREE.Scene();
+    
+    const clientW = this.canvas.clientWidth || window.innerWidth;
+    const clientH = this.canvas.clientHeight || window.innerHeight;
+    const initialAspect = clientW / clientH;
+
     this.camera = new THREE.PerspectiveCamera(
       36,
-      this.canvas.clientWidth / this.canvas.clientHeight,
+      initialAspect,
       0.05,
       50
     );
@@ -54,7 +60,7 @@ class CharacterStudioApp {
     }
 
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight, false);
+    this.renderer.setSize(clientW, clientH, false);
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.05;
 
@@ -63,7 +69,7 @@ class CharacterStudioApp {
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.065;
     this.controls.minDistance = 0.32;
-    this.controls.maxDistance = 4.5;
+    this.controls.maxDistance = 6.0;
     this.controls.maxPolarAngle = Math.PI * 0.56;
     this.controls.target.copy(this.controlsTarget);
 
@@ -71,7 +77,7 @@ class CharacterStudioApp {
       this.isTransitioningCamera = false;
     });
 
-    // 4. Studio 3-Point Lighting + Sculpted Stone Pedestal (Matches Reference 2)
+    // 4. Studio 3-Point Lighting + Sculpted Stone Pedestal
     this.setupStudioLighting();
     this.setupStudioPedestal();
 
@@ -97,8 +103,12 @@ class CharacterStudioApp {
       onSelectArchetype: (presetKey) => this.applyArchetypePreset(presetKey),
       onRandomize: () => this.randomizeCharacter(),
       onResetAll: () => this.resetAll(),
-      onResetCategory: (cat) => this.resetCategory(cat)
+      onResetCategory: (cat) => this.resetCategory(cat),
+      onDrawerToggle: () => this.focusCamera(this.currentCameraPreset)
     });
+
+    // Ajusta a câmera de acordo com a resolução real da tela
+    this.focusCamera('full', true);
 
     window.addEventListener('resize', () => this.onResize());
 
@@ -127,7 +137,6 @@ class CharacterStudioApp {
   setupStudioPedestal() {
     const pedestalGroup = new THREE.Group();
 
-    // Clean dark matte sculptor turntable base (Inspired by Reference 2 stone pedestal, zero UV artifacts)
     const baseGeo = new THREE.CylinderGeometry(0.46, 0.50, 0.06, 64);
     const baseMat = new THREE.MeshBasicMaterial({ color: 0x171a24 });
     const baseMesh = new THREE.Mesh(baseGeo, baseMat);
@@ -157,8 +166,6 @@ class CharacterStudioApp {
   }
 
   handleParameterChange(category, key, value) {
-    // When user switches between Male ('male') and Female ('female') base models,
-    // sync the bottom pill indicator and apply clean gender defaults
     if (category === 'body' && key === 'gender') {
       document.querySelectorAll('.preset-pill').forEach(p => {
         p.classList.toggle('active', p.dataset.preset === value);
@@ -167,26 +174,83 @@ class CharacterStudioApp {
       return;
     }
 
+    if (category === 'body' && key === 'height' && this.currentCameraPreset === 'full') {
+      this.focusCamera('full');
+    }
+
     this.materialSuite.updateFromState(this.state);
     this.character.applyCustomization(this.state);
   }
 
-  focusCamera(preset) {
-    const hScale = this.state.body.height;
-    this.isTransitioningCamera = true;
+  focusCamera(preset = this.currentCameraPreset, instant = false) {
+    this.currentCameraPreset = preset || 'full';
+    const hScale = this.state.body.height || 1.0;
+    const isMale = this.state.body.gender === 'male';
+    const genderMult = isMale ? 1.06 : 1.0;
+
+    const canvasW = this.canvas.clientWidth || window.innerWidth;
+    const canvasH = this.canvas.clientHeight || window.innerHeight;
+    const aspect = Math.max(0.1, canvasW / canvasH);
+    const isMobile = window.innerWidth <= 991 || aspect < 0.85;
+    const isDrawerOpen = this.ui ? this.ui.isDrawerOpen : true;
+
+    this.isTransitioningCamera = !instant;
 
     if (preset === 'head') {
-      this.controlsTarget.set(0, 1.56 * hScale, 0.08);
-      this.cameraTargetPos.set(0.0, 1.58 * hScale, 0.56);
+      if (isMobile && isDrawerOpen) {
+        this.controlsTarget.set(0, 1.54 * hScale, 0.06);
+        const z = Math.max(0.72, 0.40 / aspect) * genderMult;
+        this.cameraTargetPos.set(0.0, 1.54 * hScale, z);
+      } else {
+        this.controlsTarget.set(0, 1.54 * hScale, 0.06);
+        this.cameraTargetPos.set(0.0, 1.54 * hScale, 0.68 * genderMult);
+      }
     } else if (preset === 'upper') {
-      this.controlsTarget.set(0, 1.28 * hScale, 0.05);
-      this.cameraTargetPos.set(0.10, 1.34 * hScale, 1.15);
+      if (isMobile && isDrawerOpen) {
+        this.controlsTarget.set(0, 1.24 * hScale, 0.04);
+        const z = Math.max(1.45, 0.85 / aspect) * genderMult;
+        this.cameraTargetPos.set(0.0, 1.28 * hScale, z);
+      } else {
+        this.controlsTarget.set(0, 1.20 * hScale, 0.04);
+        this.cameraTargetPos.set(0.0, 1.24 * hScale, 1.40 * genderMult);
+      }
     } else if (preset === 'profile') {
-      this.controlsTarget.set(0, 0.94 * hScale, 0.05);
-      this.cameraTargetPos.set(2.15, 1.05 * hScale, 0.12);
+      if (isMobile && isDrawerOpen) {
+        this.controlsTarget.set(0, 0.96 * hScale, 0.05);
+        const x = Math.max(2.6, 1.35 / aspect) * genderMult;
+        this.cameraTargetPos.set(x, 1.02 * hScale, 0.10);
+      } else {
+        this.controlsTarget.set(0, 0.90 * hScale, 0.05);
+        this.cameraTargetPos.set(2.45 * genderMult, 0.96 * hScale, 0.10);
+      }
     } else {
-      this.controlsTarget.set(0, 0.90 * hScale, 0.04);
-      this.cameraTargetPos.set(0.0, 1.02 * hScale, 2.38);
+      // 'full' (Corpo Inteiro)
+      if (isMobile) {
+        if (isDrawerOpen) {
+          // No celular com gaveta aberta (ocupa ~48vh): foco na metade superior para ver o personagem
+          this.controlsTarget.set(0, 1.00 * hScale, 0);
+          const zMobile = Math.max(3.30, 1.65 / Math.max(aspect, 0.42)) * genderMult * hScale;
+          this.cameraTargetPos.set(0.0, 1.05 * hScale, zMobile);
+        } else {
+          // No celular com gaveta recolhida: corpo inteiro 100% visível dos pés à cabeça
+          this.controlsTarget.set(0, 0.82 * hScale, 0);
+          const zFullMobile = Math.max(3.40, 1.75 / Math.max(aspect, 0.42)) * genderMult * hScale;
+          this.cameraTargetPos.set(0.0, 0.88 * hScale, zFullMobile);
+        }
+      } else {
+        // Desktop: Zoom out calculado para que tanto o modelo feminino quanto masculino
+        // fiquem com a cabeça com folga segura abaixo do menu superior (.studio-header)
+        // e com o pedestal perfeitamente visível acima da barra inferior.
+        this.controlsTarget.set(0, 0.82 * hScale, 0);
+        this.cameraTargetPos.set(0.0, 0.86 * hScale, 3.25 * genderMult * hScale);
+      }
+    }
+
+    if (instant) {
+      this.camera.position.copy(this.cameraTargetPos);
+      this.controls.target.copy(this.controlsTarget);
+      this.controls.update();
+      this.isTransitioningCamera = false;
     }
   }
 
@@ -216,6 +280,9 @@ class CharacterStudioApp {
     document.querySelectorAll('.preset-pill').forEach(p => {
       p.classList.toggle('active', p.dataset.preset === presetKey);
     });
+
+    // Reajusta a câmera com suavidade mantendo a cabeça do modelo abaixo dos menus
+    this.focusCamera(this.currentCameraPreset);
   }
 
   randomizeCharacter() {
@@ -232,7 +299,6 @@ class CharacterStudioApp {
     ];
     const [skinCol, sssCol] = pick(skinPalette);
 
-    const isMale = this.state.body.gender === 'male';
     this.state.body.height = rand(0.95, 1.05);
     this.state.body.muscleTone = rand(0.35, 0.85);
     this.state.body.bodyMass = rand(0.40, 0.62);
@@ -271,6 +337,7 @@ class CharacterStudioApp {
 
     this.materialSuite.updateFromState(this.state);
     this.character.applyCustomization(this.state);
+    this.focusCamera(this.currentCameraPreset);
   }
 
   resetAll() {
@@ -278,6 +345,7 @@ class CharacterStudioApp {
     this.ui.state = this.state;
     this.materialSuite.updateFromState(this.state);
     this.character.applyCustomization(this.state);
+    this.focusCamera(this.currentCameraPreset);
   }
 
   resetCategory(catKey) {
@@ -287,11 +355,12 @@ class CharacterStudioApp {
   }
 
   onResize() {
-    const w = this.canvas.clientWidth;
-    const h = this.canvas.clientHeight;
+    const w = this.canvas.clientWidth || window.innerWidth;
+    const h = this.canvas.clientHeight || window.innerHeight;
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(w, h, false);
+    this.focusCamera(this.currentCameraPreset);
   }
 
   animate() {

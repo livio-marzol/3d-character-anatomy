@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>AETHER // 3D Character Studio (Three.js + WGSL)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,16 +28,24 @@
         <!-- Viewport Inspection Modes (Inspired by cha03, cha04, cha05) -->
         <div class="view-modes-bar" role="group" aria-label="Modos de Visualização">
           <button class="mode-btn active" data-mode="pbr" title="Renderização PBR + Shaders WGSL">
-            <span class="dot pbr-dot"></span> PBR + WGSL
+            <span class="dot pbr-dot"></span>
+            <span class="mode-text-full">PBR + WGSL</span>
+            <span class="mode-text-short">PBR</span>
           </button>
           <button class="mode-btn" data-mode="wireframe" title="Sobreposição de Topologia Quad-Flow">
-            <span class="dot wire-dot"></span> Quad Wire
+            <span class="dot wire-dot"></span>
+            <span class="mode-text-full">Quad Wire</span>
+            <span class="mode-text-short">Wire</span>
           </button>
           <button class="mode-btn" data-mode="clay" title="Modo Escultura ZBrush / Clay MatCap">
-            <span class="dot clay-dot"></span> Clay Sculpt
+            <span class="dot clay-dot"></span>
+            <span class="mode-text-full">Clay Sculpt</span>
+            <span class="mode-text-short">Clay</span>
           </button>
           <button class="mode-btn" data-mode="normals" title="Inspeção de Mapa de Normais">
-            <span class="dot norm-dot"></span> Normal View
+            <span class="dot norm-dot"></span>
+            <span class="mode-text-full">Normal View</span>
+            <span class="mode-text-short">Norm</span>
           </button>
         </div>
 
@@ -45,18 +53,30 @@
         <div class="header-actions">
           <button id="btn-randomize" class="action-btn secondary" title="Gerar variações originais aleatórias">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
-            Randomizar
+            <span class="btn-text-full">Randomizar</span>
+            <span class="btn-text-short">Rand</span>
           </button>
           <button id="btn-reset" class="action-btn ghost" title="Restaurar padrão">
-            Resetar
+            <span class="btn-text-full">Resetar</span>
+            <span class="btn-text-short">Reset</span>
           </button>
           <button id="btn-export" class="action-btn primary" title="Exportar DNA JSON do Personagem">
-            Exportar DNA
+            <span class="btn-text-full">Exportar DNA</span>
+            <span class="btn-text-short">DNA</span>
           </button>
         </div>
       </header>
 
-      <!-- Camera Focus Floating Controls (Bottom Left) -->
+      <!-- Botão Flutuante Mobile para Reabrir Gaveta quando Minimizado -->
+      <button id="mobile-open-drawer-btn" class="mobile-open-drawer-btn hidden" aria-label="Abrir Painel de Customização">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        <span>Controles</span>
+      </button>
+
+      <!-- Camera Focus Floating Controls (Bottom Left no Desktop / Top-Left no Mobile) -->
       <div class="camera-hud">
         <div class="hud-label">CÂMERA DE ESTÚDIO</div>
         <div class="camera-buttons">
@@ -68,11 +88,11 @@
         <div class="lighting-Quick">
           <label class="toggle-chip">
             <input type="checkbox" id="toggle-turntable" />
-            <span>Rotação Contínua</span>
+            <span>Giro 360°</span>
           </label>
           <label class="toggle-chip">
             <input type="checkbox" id="toggle-breathing" checked />
-            <span>Animação Viva</span>
+            <span>Respiração</span>
           </label>
         </div>
       </div>
@@ -99,28 +119,42 @@
       </div>
     </div>
 
-    <!-- Right / Lateral Customization Menu -->
-    <aside class="customizer-sidebar" aria-label="Menu de Customização do Personagem">
-      <!-- Category Navigation Rail -->
+    <!-- Right / Lateral Customization Menu (No Mobile: Bottom Sheet Retrátil) -->
+    <aside class="customizer-sidebar" id="customizer-sidebar" aria-label="Menu de Customização do Personagem">
+      <!-- Mobile Drawer Pull Handle & Header -->
+      <div class="mobile-drawer-handle" id="mobile-drawer-toggle" aria-label="Alternar visualização dos controles">
+        <div class="drawer-drag-pill"></div>
+        <div class="drawer-mobile-header-content">
+          <span class="drawer-mobile-title">
+            <span class="drawer-icon">✦</span> Controles Anatômicos
+          </span>
+          <button type="button" class="drawer-mobile-toggle-btn" id="drawer-toggle-btn">
+            <span class="toggle-text" id="drawer-toggle-text">Recolher</span>
+            <span class="toggle-icon" id="drawer-toggle-icon">▾</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Category Navigation Rail (Horizontal no Mobile, Vertical no Desktop) -->
       <nav class="category-rail" id="category-tabs">
         <button class="cat-tab active" data-category="body" title="Corpo e Proporções">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="5" r="3"/><path d="M6 9h12l-2 6v6h-3v-5h-2v5H8v-6L6 9z"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="5" r="3"/><path d="M6 9h12l-2 6v6h-3v-5h-2v5H8v-6L6 9z"/></svg>
           <span>Corpo</span>
         </button>
         <button class="cat-tab" data-category="face" title="Rosto e Estrutura Craniana">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2C7.5 2 4 6 4 11c0 4.5 3 9 8 11 5-2 8-6.5 8-11 0-5-3.5-9-8-9z"/><path d="M9 15c1.5 1 4.5 1 6 0"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2C7.5 2 4 6 4 11c0 4.5 3 9 8 11 5-2 8-6.5 8-11 0-5-3.5-9-8-9z"/><path d="M9 15c1.5 1 4.5 1 6 0"/></svg>
           <span>Rosto</span>
         </button>
         <button class="cat-tab" data-category="eyes" title="Olhos, Íris e Sobrancelhas">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
           <span>Olhos</span>
         </button>
         <button class="cat-tab" data-category="nose" title="Nariz e Perfil Nasal">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v11c0 2-3 3-3 5s2 2 3 2 3 0 3-2-3-3-3-5"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v11c0 2-3 3-3 5s2 2 3 2 3 0 3-2-3-3-3-5"/></svg>
           <span>Nariz</span>
         </button>
         <button class="cat-tab" data-category="mouth" title="Boca e Lábios">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12c3-2 6 0 9 0s6-2 9 0c-2 4-5 6-9 6s-7-2-9-6z"/><path d="M3 12c3 1 6 1 9 1s6 0 9-1"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12c3-2 6 0 9 0s6-2 9 0c-2 4-5 6-9 6s-7-2-9-6z"/><path d="M3 12c3 1 6 1 9 1s6 0 9-1"/></svg>
           <span>Boca</span>
         </button>
       </nav>

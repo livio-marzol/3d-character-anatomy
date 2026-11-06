@@ -159,15 +159,62 @@ export class UIController {
     this.state = state;
     this.callbacks = callbacks;
     this.activeCategory = 'body';
+    this.isDrawerOpen = true;
 
     this.container = document.getElementById('controls-container');
     this.catTagEl = document.getElementById('active-cat-tag');
     this.catTitleEl = document.getElementById('active-cat-title');
+    this.sidebarEl = document.getElementById('customizer-sidebar');
+    this.drawerToggleBtn = document.getElementById('drawer-toggle-btn');
+    this.drawerToggleText = document.getElementById('drawer-toggle-text');
+    this.drawerToggleIcon = document.getElementById('drawer-toggle-icon');
+    this.mobileOpenBtn = document.getElementById('mobile-open-drawer-btn');
 
     this.initNavigation();
     this.initHeaderActions();
+    this.initMobileDrawer();
     this.initWGSLCodeInspector();
     this.renderCategory('body', false);
+  }
+
+  initMobileDrawer() {
+    const toggleDrawer = () => {
+      if (!this.sidebarEl) return;
+      const isCurrentlyCollapsed = this.sidebarEl.classList.contains('collapsed');
+      this.setDrawerCollapsed(!isCurrentlyCollapsed);
+    };
+
+    const handleEl = document.getElementById('mobile-drawer-toggle');
+    if (handleEl) {
+      handleEl.addEventListener('click', (e) => {
+        // Se clicou no toggle ou na alça
+        toggleDrawer();
+      });
+    }
+
+    if (this.mobileOpenBtn) {
+      this.mobileOpenBtn.addEventListener('click', () => {
+        this.setDrawerCollapsed(false);
+      });
+    }
+  }
+
+  setDrawerCollapsed(collapsed) {
+    if (!this.sidebarEl) return;
+    this.isDrawerOpen = !collapsed;
+    this.sidebarEl.classList.toggle('collapsed', collapsed);
+
+    if (this.drawerToggleText) {
+      this.drawerToggleText.textContent = collapsed ? 'Expandir' : 'Recolher';
+    }
+    if (this.drawerToggleIcon) {
+      this.drawerToggleIcon.textContent = collapsed ? '▴' : '▾';
+    }
+    if (this.mobileOpenBtn) {
+      this.mobileOpenBtn.classList.toggle('hidden', !collapsed);
+    }
+
+    this.callbacks.onDrawerToggle?.(!collapsed);
   }
 
   initNavigation() {
@@ -177,6 +224,12 @@ export class UIController {
         tabs.forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
         const cat = tab.dataset.category;
+
+        // Se estiver no mobile e o drawer estiver recolhido, expandir para mostrar os controles da aba
+        if (window.innerWidth <= 991 && this.sidebarEl?.classList.contains('collapsed')) {
+          this.setDrawerCollapsed(false);
+        }
+
         this.renderCategory(cat, true);
       });
     });
